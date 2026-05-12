@@ -17,6 +17,8 @@ export function NoteDetail() {
   
   const [note, setNote] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ titulo: '', contenido: '' });
 
   useEffect(() => {
     fetchNote();
@@ -35,6 +37,7 @@ export function NoteDetail() {
 
       if (error) throw error;
       setNote(data);
+      setEditForm({ titulo: data.titulo, contenido: data.contenido });
     } catch (error) {
       console.error("Error al cargar nota:", error);
     } finally {
@@ -74,6 +77,23 @@ export function NoteDetail() {
     completado: 'bg-green-100 text-green-700'
   };
 
+  const handleUpdate = async () => {
+    try {
+      if (!editForm.titulo.trim() || !editForm.contenido.trim()) return;
+      const { error } = await supabase.from('notas').update({
+        titulo: editForm.titulo,
+        contenido: editForm.contenido
+      }).eq('id', note.id);
+      
+      if (error) throw error;
+      setNote({ ...note, titulo: editForm.titulo, contenido: editForm.contenido });
+      setIsEditing(false);
+    } catch (e) {
+      console.error(e);
+      alert("Error al guardar los cambios.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-white sticky top-0 z-30 shadow-sm border-b border-slate-100">
@@ -85,6 +105,32 @@ export function NoteDetail() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <span className="font-semibold text-slate-800">Detalle de Nota</span>
+          
+          <div className="ml-auto flex gap-2">
+            {!isEditing ? (
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+              >
+                Editar
+              </button>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleUpdate}
+                  className="px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                >
+                  Guardar
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -105,16 +151,37 @@ export function NoteDetail() {
               </span>
             </div>
 
-            <h1 className={clsx(
-              "text-3xl font-bold mb-4 text-slate-800",
-              isCompleted && "line-through text-slate-500"
-            )}>
-              {note.titulo}
-            </h1>
+            {isEditing ? (
+              <div className="flex flex-col gap-4 mb-8">
+                <input
+                  type="text"
+                  value={editForm.titulo}
+                  onChange={(e) => setEditForm({...editForm, titulo: e.target.value})}
+                  className="w-full px-4 py-2 text-xl font-bold bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="Título de la nota"
+                />
+                <textarea
+                  value={editForm.contenido}
+                  onChange={(e) => setEditForm({...editForm, contenido: e.target.value})}
+                  rows={6}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                  placeholder="Escribe el contenido..."
+                />
+              </div>
+            ) : (
+              <>
+                <h1 className={clsx(
+                  "text-3xl font-bold mb-4 text-slate-800",
+                  isCompleted && "line-through text-slate-500"
+                )}>
+                  {note.titulo}
+                </h1>
 
-            <div className="prose prose-slate max-w-none mb-8 whitespace-pre-wrap text-slate-600">
-              {note.contenido}
-            </div>
+                <div className="prose prose-slate max-w-none mb-8 whitespace-pre-wrap text-slate-600">
+                  {note.contenido}
+                </div>
+              </>
+            )}
 
             <div className="flex flex-col gap-4 py-6 border-y border-slate-100">
               {note.fecha_limite && (

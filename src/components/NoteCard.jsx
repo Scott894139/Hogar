@@ -48,7 +48,7 @@ export function NoteCard({ note, currentUser, onComplete, onDelete }) {
               {note.urgencia.charAt(0).toUpperCase() + note.urgencia.slice(1)}
             </span>
           </div>
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
             <button 
               onClick={handleComplete}
               className={clsx(

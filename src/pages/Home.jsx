@@ -5,6 +5,7 @@ import { CategoryFilter } from '../components/CategoryFilter';
 import { NoteCard } from '../components/NoteCard';
 import { NoteForm } from '../components/NoteForm';
 import { MemberBadge } from '../components/MemberBadge';
+import { RutinasDiarias } from '../components/RutinasDiarias';
 import { usePush } from '../hooks/usePush';
 import { LogOut, Plus, Heart, Bell } from 'lucide-react';
 
@@ -58,6 +59,8 @@ export function Home() {
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 py-8">
+        <RutinasDiarias />
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800 mb-2">Tablero Familiar</h1>
           <p className="text-slate-500">¿Qué hay de nuevo en la casa hoy?</p>

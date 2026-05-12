@@ -59,15 +59,13 @@ export function NoteCard({ note, currentUser, onComplete, onDelete }) {
             >
               <CheckCircle2 className="w-5 h-5" />
             </button>
-            {isCreator && (
-              <button 
-                onClick={handleDelete}
-                className="p-1.5 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
-                title="Eliminar nota"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            )}
+            <button 
+              onClick={handleDelete}
+              className="p-1.5 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+              title="Eliminar nota"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
           </div>
         </div>
 

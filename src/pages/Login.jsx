@@ -18,10 +18,16 @@ export function Login() {
     setLoading(true);
 
     try {
+      console.log('Iniciando login con nombre:', selectedName);
       await loginWithName(selectedName);
-      navigate('/');
+      console.log('Login exitoso. Navegando al inicio...');
+      // Le damos 500ms para que supabase guarde bien la sesión en localStorage
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
     } catch (err) {
-      console.error(err);
+      console.error('Error durante el login:', err);
+      alert('Error: ' + (err.message || 'Error desconocido al entrar.'));
       setError(err.message || 'Ocurrió un error al entrar. Intenta de nuevo.');
     } finally {
       setLoading(false);

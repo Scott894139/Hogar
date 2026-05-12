@@ -17,6 +17,7 @@ export function RutinasDiarias() {
   const { profile } = useAuth();
   const [rutinas, setRutinas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const esPadre = profile?.nombre === 'Mamá' || profile?.nombre === 'Papá';
 
   // Comprobar si es de lunes a viernes (1 = Lunes, 5 = Viernes)
   const isWeekday = () => {
@@ -58,12 +59,14 @@ export function RutinasDiarias() {
 
   const fetchRutinas = async () => {
     try {
-      if (profile.rol === 'Mamá' || profile.rol === 'Papá') {
-        // Padres ven las misiones de todos los hijos
+      const esPadre = profile.nombre === 'Mamá' || profile.nombre === 'Papá';
+
+      if (esPadre) {
+        // Papá y Mamá ven las listas de Emma y Tomas (solo lectura)
         const { data: kidsProfiles } = await supabase
           .from('profiles')
           .select('*')
-          .in('rol', ['Hijo', 'Hija']);
+          .in('nombre', ['Hijo', 'Hija']);
 
         if (kidsProfiles && kidsProfiles.length > 0) {
           const { data: rutinasHoy } = await supabase
@@ -151,10 +154,13 @@ export function RutinasDiarias() {
 
   return (
     <div className="mb-10">
-      <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+      <h2 className="text-xl font-bold text-slate-800 mb-1 flex items-center gap-2">
         <Trophy className="text-yellow-500 w-6 h-6" /> 
-        Misiones del Día
+        {esPadre ? 'Seguimiento de los niños' : 'Mis Misiones del Día'}
       </h2>
+      {esPadre && (
+        <p className="text-sm text-slate-400 mb-4">Vista en tiempo real de las tareas de Emma y Tomas</p>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {rutinas.map(rutina => {
           const completedCount = TASKS.filter(t => rutina[t.id]).length;
@@ -186,7 +192,26 @@ export function RutinasDiarias() {
               <div className="space-y-1.5">
                 {TASKS.map(task => {
                   const isChecked = rutina[task.id];
-                  return (
+                  return esPadre ? (
+                    // PAPÁ Y MAMÁ: solo ven, no pueden marcar
+                    <div
+                      key={task.id}
+                      className="w-full flex items-center gap-3 p-2 rounded-xl text-left"
+                    >
+                      {isChecked ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <Circle className="w-5 h-5 text-slate-200 flex-shrink-0" />
+                      )}
+                      <span className={clsx(
+                        "text-sm font-medium",
+                        isChecked ? "text-slate-400 line-through" : "text-slate-600"
+                      )}>
+                        {task.label}
+                      </span>
+                    </div>
+                  ) : (
+                    // EMMA Y TOMAS: pueden marcar sus propias tareas
                     <button
                       key={task.id}
                       onClick={() => toggleTask(rutina.id, task.id, isChecked)}

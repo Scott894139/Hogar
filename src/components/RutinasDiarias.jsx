@@ -27,11 +27,33 @@ export function RutinasDiarias() {
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
   useEffect(() => {
+    let channel;
+
     if (profile && isWeekday()) {
       fetchRutinas();
+
+      // Suscripción en tiempo real a los cambios de las rutinas
+      channel = supabase
+        .channel('rutinas-changes')
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'rutinas_diarias', filter: `fecha=eq.${todayStr}` },
+          (payload) => {
+            // Actualizar la interfaz instantáneamente cuando otro dispositivo marque un check
+            setRutinas(prev => prev.map(r => 
+              r.id === payload.new.id ? { ...r, ...payload.new } : r
+            ));
+          }
+        )
+        .subscribe();
+
     } else {
       setLoading(false);
     }
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [profile]);
 
   const fetchRutinas = async () => {

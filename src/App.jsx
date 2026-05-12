@@ -23,9 +23,40 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+function AutoLogout() {
+  const { user, logout } = useAuth();
+  
+  React.useEffect(() => {
+    if (!user) return;
+    
+    let timeout;
+    
+    const resetTimeout = () => {
+      if (timeout) clearTimeout(timeout);
+      // 5 minutos de inactividad (300000 ms)
+      timeout = setTimeout(() => {
+        logout();
+      }, 5 * 60 * 1000);
+    };
+
+    const events = ['mousemove', 'keydown', 'scroll', 'touchstart', 'click'];
+    
+    events.forEach(event => window.addEventListener(event, resetTimeout));
+    resetTimeout();
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+      events.forEach(event => window.removeEventListener(event, resetTimeout));
+    };
+  }, [user, logout]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <AutoLogout />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route 

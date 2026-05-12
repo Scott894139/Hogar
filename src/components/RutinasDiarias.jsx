@@ -69,10 +69,14 @@ export function RutinasDiarias() {
           .in('nombre', ['Hijo', 'Hija']);
 
         if (kidsProfiles && kidsProfiles.length > 0) {
+          const kidsIds = kidsProfiles.map(k => k.id);
+          
+          // Traer solo las rutinas de los niños de hoy
           const { data: rutinasHoy } = await supabase
             .from('rutinas_diarias')
             .select('*, profiles(nombre, avatar_color)')
-            .eq('fecha', todayStr);
+            .eq('fecha', todayStr)
+            .in('profile_id', kidsIds);
 
           // Verificar si falta crear la lista de algún niño hoy
           const existingIds = rutinasHoy?.map(r => r.profile_id) || [];
@@ -87,6 +91,7 @@ export function RutinasDiarias() {
               .from('rutinas_diarias')
               .select('*, profiles(nombre, avatar_color)')
               .eq('fecha', todayStr)
+              .in('profile_id', kidsIds)
               .order('id', { ascending: true });
             setRutinas(refetched || []);
           } else {

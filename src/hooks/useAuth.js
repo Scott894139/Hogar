@@ -123,15 +123,19 @@ export function AuthProvider({ children }) {
     return signInData;
   };
 
-  const logout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      localStorage.removeItem('sb-rowmnwosvsvdekdyngpt-auth-token');
-      window.location.href = '/login';
-    }
+  const logout = () => {
+    // 1. Limpiamos estado local inmediatamente
+    setUser(null);
+    setProfile(null);
+    
+    // 2. Limpiamos caché del navegador inmediatamente
+    localStorage.removeItem('sb-rowmnwosvsvdekdyngpt-auth-token');
+    
+    // 3. Redirigimos sin esperar
+    window.location.href = '/login';
+    
+    // 4. Le avisamos a Supabase en segundo plano
+    supabase.auth.signOut().catch(console.error);
   };
 
   return (
